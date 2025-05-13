@@ -366,6 +366,8 @@ function mockUpdateStatus() {
   previousState.buttons = gamepad.buttons.map(button => ({ ...button }));
   previousState.axes = [...gamepad.axes];
 
+  sendBLEdata(gamepad);
+
   // Trigger your existing logic
   updateStatus();
 }
@@ -472,10 +474,16 @@ function logButtonPress(buttonIndex, isPressed) {
           // Update analog sticks
           updateAnalogStick(gamepad.axes[0], gamepad.axes[1], leftStickDot, 'Left');
           updateAnalogStick(gamepad.axes[2], gamepad.axes[3], rightStickDot, 'Right');
+          sendBLEdata(gamepad);
         }
+
       }
       
       animationFrameId = requestAnimationFrame(updateStatus);
+    }
+
+    function sendBLEdata(data){
+        console.log("Sending data via BLE:", data);
     }
 
     function updateAnalogStick(x, y, stickElement, stickName) {
