@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>PS4 Controller Interface</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+    .controller-button {
+      transition: all 0.1s ease;
+    }
+    .button-pressed {
+      background-color: #ef4444;
+      transform: scale(0.95);
+    }
+    .stick-dot {
+      transition: transform 0.1s ease;
+    }
+    .logging-section {
+      height: 500px; /* Fixed height for the entire logging section */
+      display: flex;
+      flex-direction: column;
+    }
+
+    #log-container {
+      flex: 1; /* Take up remaining space in the logging section */
+      overflow-y: auto; /* Enable vertical scrolling */
+      background-color: #1a1a1a; /* Optional: Darker background for better visibility */
+      padding: 10px; /* Optional: Add padding for better readability */
+      border-radius: 5px; /* Optional: Rounded corners */
+      scrollbar-width: thin; /* For modern browsers: makes the scrollbar thinner */
+      scrollbar-color: #4b5563 #1a1a1a; /* Custom scrollbar colors */
+    }
+
+    /* For WebKit browsers (Chrome, Safari, Edge) */
+    #log-container::-webkit-scrollbar {
+      width: 8px; /* Width of the scrollbar */
+    }
+    #log-container::-webkit-scrollbar-thumb {
+      background-color: #4b5563; /* Color of the scrollbar thumb */
+      border-radius: 4px; /* Rounded corners for the scrollbar thumb */
+    }
+    #log-container::-webkit-scrollbar-track {
+      background-color: #1a1a1a; /* Background color of the scrollbar track */
+    }
+        </style>
+    </head>
+    <body class="bg-gray-900 text-white min-h-screen p-4">
+        <div class="max-w-6xl mx-auto">
+            <header class="mb-8">
+                <h1 class="text-3xl font-bold text-center mb-2">PS4 Controller Interface</h1>
+                <p class="text-center text-gray-400">Connect your PS4 controller and see inputs in real-time</p>
+            </header>
+            <button id="mock-mode" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded">
+                TOGGLE Mock Input
+            </button>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Controller Visualization -->
+                <div class="bg-gray-800 rounded-lg p-6 shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4">Controller Visualization</h2>
+                    <div class="flex justify-center mb-4">
+                        <div id="connection-status" class="px-3 py-1 rounded-full text-sm font-medium bg-red-500">
+                            Not Connected
+                        </div>
+                    </div>
+                    <div class="relative w-full max-w-md mx-auto aspect-[4/3] bg-gray-700 rounded-lg p-4">
+                        <!-- Controller Body -->
+                        <div class="absolute inset-0 m-auto w-[80%] h-[60%] bg-black rounded-3xl"></div>
+                        <!-- D-Pad -->
+                        <div class="absolute left-[15%] top-[40%] grid grid-cols-3 gap-1 w-16 h-16">
+                            <div></div>
+                            <div id="button-12" class="controller-button bg-gray-600 rounded-md"></div>
+                            <div></div>
+                            <div id="button-14" class="controller-button bg-gray-600 rounded-md"></div>
+                            <div></div>
+                            <div id="button-15" class="controller-button bg-gray-600 rounded-md"></div>
+                            <div></div>
+                            <div id="button-13" class="controller-button bg-gray-600 rounded-md"></div>
+                            <div></div>
+                        </div>
+                        <!-- Face Buttons -->
+                        <div class="absolute right-[15%] top-[40%] grid grid-cols-3 gap-1 w-16 h-16">
+                            <div></div>
+                            <div id="button-3" class="controller-button bg-green-600 rounded-full"></div>
+                            <div></div>
+                            <div id="button-2" class="controller-button bg-red-600 rounded-full"></div>
+                            <div></div>
+                            <div id="button-1" class="controller-button bg-pink-600 rounded-full"></div>
+                            <div></div>
+                            <div id="button-0" class="controller-button bg-blue-600 rounded-full"></div>
+                            <div></div>
+                        </div>
+                        <!-- Left Analog Stick -->
+                        <div class="absolute left-[25%] top-[25%] w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center">
+                            <div id="left-stick-dot" class="stick-dot w-6 h-6 bg-gray-400 rounded-full"></div>
+                            <div id="button-10" class="absolute inset-0 controller-button opacity-0"></div>
+                        </div>
+                        <!-- Right Analog Stick -->
+                        <div class="absolute right-[25%] top-[55%] w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center">
+                            <div id="right-stick-dot" class="stick-dot w-6 h-6 bg-gray-400 rounded-full"></div>
+                            <div id="button-11" class="absolute inset-0 controller-button opacity-0"></div>
+                        </div>
+                        <!-- Shoulder Buttons -->
+                        <div class="absolute left-[15%] top-[10%] w-20 h-8 flex gap-2">
+                            <div id="button-4" class="controller-button bg-gray-600 rounded-md flex-1"></div>
+                            <div id="button-6" class="controller-button bg-gray-600 rounded-md flex-1"></div>
+                        </div>
+                        <div class="absolute right-[15%] top-[10%] w-20 h-8 flex gap-2">
+                            <div id="button-5" class="controller-button bg-gray-600 rounded-md flex-1"></div>
+                            <div id="button-7" class="controller-button bg-gray-600 rounded-md flex-1"></div>
+                        </div>
+                        <!-- Center Buttons -->
+                        <div class="absolute left-[40%] top-[40%] w-32 h-8 flex gap-2 justify-center">
+                            <div id="button-8" class="controller-button bg-gray-600 w-8 h-4 rounded-md"></div>
+                            <div id="button-9" class="controller-button bg-gray-600 w-8 h-4 rounded-md"></div>
+                        </div>
+                        <!-- PS Button -->
+                        <div class="absolute left-[45%] top-[50%] w-10 h-10">
+                            <div id="button-16" class="controller-button bg-gray-600 rounded-full w-full h-full flex items-center justify-center">
+                                <span class="text-xs">PS</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Logging Section -->
+                <div class="bg-gray-800 rounded-lg p-6 shadow-lg logging-section">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold">Input Log</h2>
+                        <div class="flex items-center gap-4">
+                            <button id="clear-log" class="px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-sm">
+                                Clear Log
+                            </button>
+                            <label class="inline-flex items-center cursor-pointer">
+                                <span class="mr-2 text-sm">Log to File</span>
+                                <div class="relative">
+                                    <input type="checkbox" id="log-to-file" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-blue-600"></div>
+                                    <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition peer-checked:translate-x-5"></div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="log-container" class="flex-1 bg-gray-900 rounded p-4 font-mono text-sm overflow-y-auto">
+                        <div class="text-gray-500">Waiting for controller input...</div>
+                    </div>
+                    <div class="mt-4 flex justify-between">
+                        <button id="connect-controller" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded">
+                            Connect Controller
+                        </button>
+                        <button id="save-log" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded">
+                            Save Log
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+    // Controller state
+    let controllers = {};
+    let controllerIndex = null;
+    let logToFile = false;
+    let logData = [];
+    let fileHandle = null;
+    let animationFrameId = null;
+    let statusUpdateInterval = null; // Interval ID for status updates
+
+    // DOM Elements
+    const connectButton = document.getElementById('connect-controller');
+    const connectionStatus = document.getElementById('connection-status');
+    const logContainer = document.getElementById('log-container');
+    const logToFileToggle = document.getElementById('log-to-file');
+    const clearLogButton = document.getElementById('clear-log');
+    const saveLogButton = document.getElementById('save-log');
+    const leftStickDot = document.getElementById('left-stick-dot');
+    const rightStickDot = document.getElementById('right-stick-dot');
+
+    // Button mapping for PS4 controller
+    const buttonMapping = {
+      0: 'Cross',
+      1: 'Circle',
+      2: 'Square',
+      3: 'Triangle',
+      4: 'L1',
+      5: 'R1',
+      6: 'L2',
+      7: 'R2',
+      8: 'Share',
+      9: 'Options',
+      10: 'L3',
+      11: 'R3',
+      12: 'DPad Up',
+      13: 'DPad Down',
+      14: 'DPad Left',
+      15: 'DPad Right',
+      16: 'PS Button',
+      17: 'Touchpad'
+    };
+
+    // Initialize
+    function init() {
+      // Check if GamePad API is supported
+      if (!navigator.getGamepads) {
+        logMessage('GamePad API not supported in this browser', 'error');
+        connectButton.disabled = true;
+        return;
+      }
+
+      // Event listeners
+      connectButton.addEventListener('click', connectController);
+      logToFileToggle.addEventListener('change', toggleFileLogging);
+      clearLogButton.addEventListener('click', clearLog);
+      saveLogButton.addEventListener('click', saveLogToFile);
+
+      // Listen for gamepad connections/disconnections
+      window.addEventListener('gamepadconnected', handleGamepadConnected);
+      window.addEventListener('gamepaddisconnected', handleGamepadDisconnected);
+
+      // Check if a gamepad is already connected
+      checkForExistingGamepad();
+    }
+    
+    let mockInputEnabled = false;
+    const mockButton = document.getElementById('mock-mode');
+    mockButton.addEventListener('click', () => {
+        mockInputEnabled = !mockInputEnabled;
+      if (!mockInputEnabled) {
+        stopMockInput();
+      } else {
+        startMockInput();
+      }
+    });
+
+    
+    function stopMockInput() {
+      logMessage('Stopping mock input...', 'info');
+      connectionStatus.textContent = 'Not Connected';
+      connectionStatus.classList.remove('bg-purple-500', 'bg-yellow-500');
+      connectionStatus.classList.add('bg-red-500');
+
+      // Stop the interval loop
+      if (statusUpdateInterval) {
+        clearInterval(statusUpdateInterval);
+        statusUpdateInterval = null;
+      }
+
+      // Reset controller state
+      controllerIndex = null;
+      controllers = {};
+    }
+
+function startMockInput() {
+  logMessage('Starting mock input...', 'info');
+  connectionStatus.textContent = 'Mock Connected';
+  connectionStatus.classList.remove('bg-red-500', 'bg-yellow-500');
+  connectionStatus.classList.add('bg-purple-500');
+
+  // Fake controller index
+  controllerIndex = 0;
+  controllers[controllerIndex] = {
+    id: 'Mock PS4 Controller',
+    buttons: Array(18).fill({ pressed: false }),
+    axes: [0, 0, 0, 0],
+  };
+
+  // Start mock update loop at a fixed interval
+  if (!statusUpdateInterval) {
+    statusUpdateInterval = setInterval(mockUpdateStatus, 100); // Update every 100ms
+  }
+}
+
+function mockUpdateStatus() {
+    if (!mockInputEnabled) {
+        // Stop the loop if mock input is disabled
+        logMessage('Mock input disabled', 'info');
+        return;
+    }
+
+    const gamepad = controllers[controllerIndex];
+    if (!gamepad) return;
+
+    // Simulate some buttons being pressed randomly
+    gamepad.buttons = gamepad.buttons.map((button, index) => {
+        const pressed = Math.random() < 0.1;
+        logMessage(`Mock Button ${index} ${pressed ? 'pressed' : 'released'}`, pressed ? 'button-press' : 'button-release');
+        return { pressed };
+    });
+
+    // Simulate analog stick movement
+    gamepad.axes = [
+        (Math.random() * 2 - 1).toFixed(2), // Left X
+        (Math.random() * 2 - 1).toFixed(2), // Left Y
+        (Math.random() * 2 - 1).toFixed(2), // Right X
+        (Math.random() * 2 - 1).toFixed(2), // Right Y
+    ].map((value, index) => {
+        logMessage(`Mock Axis ${index}: ${value}`, 'info');
+        return Number(value);
+    });
+
+    // Trigger your existing logic
+    updateStatus();
+}
+
+    function checkForExistingGamepad() {
+      const gamepads = navigator.getGamepads();
+      for (let i = 0; i < gamepads.length; i++) {
+        if (gamepads[i]) {
+          handleGamepadConnected({ gamepad: gamepads[i] });
+          break;
+        }
+      }
+    }
+
+    function connectController() {
+      logMessage('Press any button on your PS4 controller to connect...', 'info');
+      connectionStatus.textContent = 'Waiting for input...';
+      connectionStatus.classList.remove('bg-red-500', 'bg-green-500');
+      connectionStatus.classList.add('bg-yellow-500');
+    }
+
+    function handleGamepadConnected(event) {
+      const gamepad = event.gamepad || event;
+      controllerIndex = gamepad.index;
+      controllers[controllerIndex] = gamepad;
+      
+      logMessage(`Controller connected: ${gamepad.id}`, 'success');
+      connectionStatus.textContent = 'Connected';
+      connectionStatus.classList.remove('bg-red-500', 'bg-yellow-500');
+      connectionStatus.classList.add('bg-green-500');
+      
+      // Start polling the gamepad state
+      if (!animationFrameId) {
+        animationFrameId = requestAnimationFrame(updateStatus);
+      }
+    }
+
+    function handleGamepadDisconnected(event) {
+      const gamepad = event.gamepad;
+      delete controllers[gamepad.index];
+      
+      if (gamepad.index === controllerIndex) {
+        controllerIndex = null;
+        logMessage('Controller disconnected', 'error');
+        connectionStatus.textContent = 'Not Connected';
+        connectionStatus.classList.remove('bg-green-500', 'bg-yellow-500');
+        connectionStatus.classList.add('bg-red-500');
+        
+        // Stop polling
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
+        
+        // Reset visual state
+        resetControllerVisuals();
+      }
+    }
+
+    function resetControllerVisuals() {
+      // Reset all button visuals
+      for (let i = 0; i < 18; i++) {
+        const buttonEl = document.getElementById(`button-${i}`);
+        if (buttonEl) {
+          buttonEl.classList.remove('button-pressed');
+        }
+      }
+      
+      // Reset stick positions
+      leftStickDot.style.transform = 'translate(0, 0)';
+      rightStickDot.style.transform = 'translate(0, 0)';
+    }
+
+    // Main update loop
+    function updateStatus() {
+      if (controllerIndex !== null) {
+        // Get the latest gamepad state
+        const gamepad = navigator.getGamepads()[controllerIndex];
+        if (gamepad) {
+          // Update button states
+          for (let i = 0; i < gamepad.buttons.length; i++) {
+            const button = gamepad.buttons[i];
+            const buttonEl = document.getElementById(`button-${i}`);
+            
+            if (buttonEl) {
+              if (button.pressed) {
+                if (!buttonEl.classList.contains('button-pressed')) {
+                  buttonEl.classList.add('button-pressed');
+                  logButtonPress(i, true);
+                }
+              } else if (buttonEl.classList.contains('button-pressed')) {
+                buttonEl.classList.remove('button-pressed');
+                logButtonPress(i, false);
+              }
+            }
+          }
+          
+          // Update analog sticks
+          updateAnalogStick(gamepad.axes[0], gamepad.axes[1], leftStickDot, 'Left');
+          updateAnalogStick(gamepad.axes[2], gamepad.axes[3], rightStickDot, 'Right');
+        }
+      }
+      
+      animationFrameId = requestAnimationFrame(updateStatus);
+    }
+
+    function updateAnalogStick(x, y, stickElement, stickName) {
+      // Apply deadzone
+      const deadzone = 0.05;
+      x = Math.abs(x) < deadzone ? 0 : x;
+      y = Math.abs(y) < deadzone ? 0 : y;
+      
+      // Move the visual dot (scale movement to 30px max)
+      const maxMove = 30;
+      stickElement.style.transform = `translate(${x * maxMove}px, ${y * maxMove}px)`;
+      
+      // Log significant movements (to avoid spamming the log)
+      const significantChange = 0.3;
+      if (Math.abs(x) > significantChange || Math.abs(y) > significantChange) {
+        // Only log every few frames to avoid overwhelming the log
+        if (Math.random() < 0.1) {
+          logMessage(`${stickName} Stick: X=${x.toFixed(2)}, Y=${y.toFixed(2)}`, 'info');
+        }
+      }
+    }
+
+    function logButtonPress(buttonIndex, isPressed) {
+      const buttonName = buttonMapping[buttonIndex] || `Button ${buttonIndex}`;
+      const action = isPressed ? 'pressed' : 'released';
+      logMessage(`${buttonName} ${action}`, isPressed ? 'button-press' : 'button-release');
+    }
+
+    function logMessage(message, type = 'info') {
+      const timestamp = new Date().toLocaleTimeString();
+      const logEntry = `[${timestamp}] ${message}`;
+      
+      // Add to DOM
+      const logLine = document.createElement('div');
+      logLine.textContent = logEntry;
+      
+      // Style based on message type
+      switch (type) {
+        case 'error':
+          logLine.classList.add('text-red-400');
+          break;
+        case 'success':
+          logLine.classList.add('text-green-400');
+          break;
+        case 'button-press':
+          logLine.classList.add('text-yellow-400');
+          break;
+        case 'button-release':
+          logLine.classList.add('text-blue-400');
+          break;
+        default:
+          logLine.classList.add('text-gray-300');
+      }
+      
+      logContainer.appendChild(logLine);
+
+      // Scroll to the bottom
+      logContainer.scrollTop = logContainer.scrollHeight;
+
+      // Remove oldest logs if exceeding 2000 lines
+      while (logContainer.children.length > 2000) {
+        logContainer.removeChild(logContainer.firstChild);
+      }
+
+      // Add to log data array
+      logData.push(logEntry);
+
+      // Write to file if enabled
+      if (logToFile && fileHandle) {
+        writeToLogFile(logEntry);
+      }
+    }
+
+    async function toggleFileLogging(e) {
+      logToFile = e.target.checked;
+      
+      if (logToFile && !fileHandle) {
+        try {
+          // Request permission to create/write to a file
+          fileHandle = await window.showSaveFilePicker({
+            suggestedName: 'controller-log.txt',
+            types: [{
+              description: 'Text Files',
+              accept: { 'text/plain': ['.txt'] },
+            }],
+          });
+          
+          logMessage('File logging enabled', 'success');
+          
+          // Write header to file
+          const header = `=== PS4 CONTROLLER LOG - STARTED ${new Date().toLocaleString()} ===\n\n`;
+          await writeToLogFile(header);
+          
+          // Write existing log data
+          if (logData.length > 0) {
+            await writeToLogFile(logData.join('\n') + '\n');
+          }
+        } catch (err) {
+          logMessage(`Error setting up file logging: ${err.message}`, 'error');
+          logToFileToggle.checked = false;
+          logToFile = false;
+        }
+      } else if (!logToFile && fileHandle) {
+        logMessage('File logging disabled', 'info');
+      }
+    }
+
+    async function writeToLogFile(text) {
+      if (!fileHandle) return;
+      
+      try {
+        const writable = await fileHandle.createWritable({ keepExistingData: true });
+        await writable.seek((await fileHandle.getFile()).size);
+        await writable.write(text + '\n');
+        await writable.close();
+      } catch (err) {
+        logMessage(`Error writing to log file: ${err.message}`, 'error');
+        logToFileToggle.checked = false;
+        logToFile = false;
+        fileHandle = null;
+      }
+    }
+
+    function clearLog() {
+      logContainer.innerHTML = '';
+      logData = [];
+      logMessage('Log cleared', 'info');
+    }
+
+    async function saveLogToFile() {
+      try {
+        const blob = new Blob([logData.join('\n')], { type: 'text/plain' });
+        const fileHandle = await window.showSaveFilePicker({
+          suggestedName: 'controller-log.txt',
+          types: [{
+            description: 'Text Files',
+            accept: { 'text/plain': ['.txt'] },
+          }],
+        });
+        
+        const writable = await fileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        
+        logMessage('Log saved to file successfully', 'success');
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          logMessage(`Error saving log: ${err.message}`, 'error');
+        }
+      }
+    }
+
+    // Initialize on page load
+    window.addEventListener('load', init);
+        </script>
+    </body>
+</html>
